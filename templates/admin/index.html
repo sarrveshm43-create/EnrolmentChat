@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}MSU Enrollment Assistant - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="border-bottom pb-2">Admin Dashboard</h2>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary h-100">
+            <div class="card-body">
+                <h5 class="card-title">Documents</h5>
+                <p class="card-text display-4">{{ document_count }}</p>
+                <p class="card-text">
+                    <small>{{ active_document_count }} active</small>
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success h-100">
+            <div class="card-body">
+                <h5 class="card-title">Sessions</h5>
+                <p class="card-text display-4">{{ session_count }}</p>
+                <p class="card-text">
+                    <small>User interactions</small>
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info h-100">
+            <div class="card-body">
+                <h5 class="card-title">Queries</h5>
+                <p class="card-text display-4">{{ query_count }}</p>
+                <p class="card-text">
+                    <small>Questions answered</small>
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning h-100">
+            <div class="card-body">
+                <h5 class="card-title">Knowledge Base</h5>
+                <div class="d-grid gap-2">
+                    <form action="{{ url_for('admin.rebuild_vectorstore') }}" method="post">
+                        <button type="submit" class="btn btn-light">Rebuild Index</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card animate-fade-in">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning-charge me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('admin.upload_document') }}" class="btn btn-primary">
+                                <i class="bi bi-upload me-2"></i> Upload Document
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('admin.list_documents') }}" class="btn btn-secondary">
+                                <i class="bi bi-files me-2"></i> Manage Documents
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('admin.stats') }}" class="btn btn-info">
+                                <i class="bi bi-graph-up me-2"></i> View Statistics
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Documents -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card animate-fade-in">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-file-earmark-pdf me-2"></i>Recent Documents</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_documents %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Filename</th>
+                                <th>Category</th>
+                                <th>Upload Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for doc in recent_documents %}
+                            <tr>
+                                <td>{{ doc.original_filename }}</td>
+                                <td>{{ doc.category or 'Uncategorized' }}</td>
+                                <td>{{ doc.upload_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    {% if doc.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Inactive</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    No documents have been uploaded yet. <a href="{{ url_for('admin.upload_document') }}">Upload your
+                        first document</a>.
+                </div>
+                {% endif %}
+            </div>
+            {% if recent_documents %}
+            <div class="card-footer">
+                <a href="{{ url_for('admin.list_documents') }}" class="btn btn-sm btn-outline-primary">View All
+                    Documents</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Recent User Queries -->
+<div class="row">
+    <div class="col-12">
+        <div class="card animate-fade-in">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-chat-dots me-2"></i>Recent User Queries</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_queries %}
+                <div class="query-list">
+                    {% for query in recent_queries %}
+                    <div class="query-item">
+                        <div class="query-text">{{ query.query }}</div>
+                        <div class="query-time">
+                            <i class="bi bi-clock me-1"></i>{{ query.timestamp.strftime('%Y-%m-%d %H:%M') }}
+                            {% if query.processed_time %}
+                            <span class="ms-2"><i class="bi bi-stopwatch me-1"></i>{{ "%.2f"|format(query.processed_time) }}s</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    No user queries have been logged yet.
+                </div>
+                {% endif %}
+            </div>
+            {% if recent_queries %}
+            <div class="card-footer">
+                <a href="{{ url_for('admin.stats') }}" class="btn btn-sm btn-outline-primary">View All Queries</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

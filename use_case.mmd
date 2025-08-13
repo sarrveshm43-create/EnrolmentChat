@@ -1,0 +1,32 @@
+%% MSU AI Chatbot System - Use Case Diagram
+%% Suitable for research paper inclusion
+
+%% Mermaid 10+ syntax for use case diagrams
+
+%% Actors
+actor User as U
+actor Admin as A
+
+%% System boundary
+rectangle "MSU AI Chatbot System" {
+    (Chat with Bot) as UC1
+    (Switch Language) as UC2
+    (View Enrollment Info) as UC3
+    (Login/Logout) as UC4
+    (Upload Document) as UC5
+    (Manage Documents) as UC6
+    (View Analytics) as UC7
+    (Admin Dashboard) as UC8
+}
+
+%% Relationships
+U -- UC1
+U -- UC2
+U -- UC3
+A -- UC4
+A -- UC5
+A -- UC6
+A -- UC7
+A -- UC8
+UC5 ..> UC6 : <<include>>
+UC8 ..> UC7 : <<include>>

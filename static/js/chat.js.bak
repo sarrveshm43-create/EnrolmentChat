@@ -1,0 +1,401 @@
+/**
+ * MSU Enrollment Assistant Chat Interface
+ * Handles user interactions, message sending, and chat display
+ */
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Get DOM elements
+    const chatMessages = document.getElementById('chat-messages');
+    const messageInput = document.getElementById('message-input');
+    const chatForm = document.getElementById('chat-form');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const suggestedQuestions = document.querySelectorAll('.suggested-question-btn');
+    const clearChatButton = document.getElementById('clear-chat');
+    const sendButton = document.getElementById('send-button');
+    const languageDropdown = document.getElementById('languageDropdown');
+
+    // State variables
+    let isMessageInProgress = false;
+
+    // Debug element presence
+    console.log('Elements found:', {
+        chatMessages: !!chatMessages,
+        messageInput: !!messageInput,
+        chatForm: !!chatForm,
+        loadingIndicator: !!loadingIndicator,
+        clearChatButton: !!clearChatButton,
+        suggestedQuestions: suggestedQuestions.length,
+        sendButton: !!sendButton,
+        languageDropdown: !!languageDropdown
+    });
+
+    // Helper function to add a message to the chat
+    function addMessage(text, isUser, responseData = {}) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+
+        // Format bot messages as HTML if needed
+        if (!isUser && text.includes('<')) {
+            contentDiv.innerHTML = text;
+        } else {
+            contentDiv.textContent = text;
+        }
+
+        messageDiv.appendChild(contentDiv);
+        chatMessages.appendChild(messageDiv);
+        scrollToBottom();
+    }
+
+    // Helper function to scroll to bottom of chat
+    function scrollToBottom() {
+        if (chatMessages) {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    }
+
+    // Function to get current language from dropdown
+    function getCurrentLanguage() {
+        if (languageDropdown) {
+            return languageDropdown.value || 'en';
+        }
+        return 'en';
+    }
+
+    // Helper function to show welcome message
+    function showWelcomeMessage() {
+        const currentLanguage = getCurrentLanguage();
+        const translations = window.translations[currentLanguage] || window.translations['en'];
+        const welcomeMessage = translations['welcome_message'] || '';
+        addMessage(welcomeMessage, false);
+    }
+
+    // Debounce function to prevent multiple rapid clicks
+    function debounce(func, wait) {
+        let timeout;
+        return function() {
+            const context = this;
+            const args = arguments;
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(context, args), wait);
+        };
+    }
+
+    // Initialize session
+    async function initializeSession() {
+        try {
+            // Show welcome message immediately
+            showWelcomeMessage();
+
+            // Initialize session with server
+            const response = await fetch('/api/chat/initialize', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to initialize session');
+            }
+
+            const data = await response.json();
+            console.log('Session initialized:', data);
+        } catch (error) {
+            console.error('Error initializing session:', error);
+        }
+    }
+
+    // Send message to server
+    async function sendMessage(message, isUserMessage = true) {
+        if (isMessageInProgress) {
+            console.log('Message in progress, ignoring new message');
+            return;
+        }
+
+        isMessageInProgress = true;
+        const currentLanguage = getCurrentLanguage();
+        const translations = window.translations[currentLanguage] || window.translations['en'];
+
+        try {
+            if (isUserMessage) {
+                // Add user message to chat
+                addMessage(message, true);
+                scrollToBottom();
+            }
+
+            // Show loading indicator
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'block';
+            }
+
+            // Send message to server
+            const response = await fetch('/api/chat/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: message,
+                    language: currentLanguage
+                }),
+                credentials: 'same-origin'
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+            console.log('Server response:', data);
+
+            // Hide loading indicator
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'none';
+            }
+
+            // Add bot response to chat
+            if (data && data.bot_response && data.bot_response.text) {
+                addMessage(data.bot_response.text, false);
+                scrollToBottom();
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'none';
+            }
+
+            // Show error message
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'alert alert-danger';
+            errorDiv.textContent = translations.error_message || 'An error occurred. Please try again.';
+            chatMessages.insertBefore(errorDiv, chatMessages.firstChild);
+        } finally {
+            isMessageInProgress = false;
+        }
+    }
+
+    // Setup suggested questions
+    function setupSuggestedQuestions() {
+        const buttons = document.querySelectorAll('.suggested-question-btn');
+        buttons.forEach(button => {
+            button.addEventListener('click', async function() {
+                if (isMessageInProgress) return;
+                const question = this.textContent.trim();
+                if (question) {
+                    try {
+                        await sendMessage(question, true);
+                    } catch (error) {
+                        console.error('Error sending suggested question:', error);
+                    }
+                }
+            });
+        });
+    }
+
+    // Handle clear chat button
+    async function clearChat() {
+        if (isMessageInProgress) {
+            console.log('Message in progress, cannot clear chat');
+            return;
+        }
+
+        isMessageInProgress = true;
+
+        try {
+            // Clear chat messages
+            chatMessages.innerHTML = '';
+
+            // Clear server-side history
+            const response = await fetch('/api/chat/clear', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+        messageDiv.appendChild(contentDiv);
+
+        // Add metadata for bot messages
+        if (!isUser && responseData) {
+            // Add timestamp
+            const timestampDiv = document.createElement('div');
+            timestampDiv.className = 'message-timestamp';
+            timestampDiv.textContent = new Date().toLocaleTimeString();
+            messageDiv.appendChild(timestampDiv);
+            
+            // Add context indicator if context was retained
+            if (responseData.context_retained) {
+                const contextIndicator = document.createElement('div');
+                contextIndicator.className = 'context-indicator';
+                contextIndicator.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i>';
+                contextIndicator.title = 'Context retained from previous messages';
+                messageDiv.appendChild(contextIndicator);
+            }
+            
+            // Add intent badge if available
+            if (responseData.bot_response && responseData.bot_response.intent) {
+                const intentBadge = document.createElement('div');
+                intentBadge.className = `intent-badge ${responseData.bot_response.intent}`;
+                intentBadge.textContent = formatIntentLabel(responseData.bot_response.intent);
+                messageDiv.appendChild(intentBadge);
+            }
+            
+            // Add next steps if available
+            if (responseData.bot_response && responseData.bot_response.next_steps && responseData.bot_response.next_steps.length > 0) {
+                const nextStepsDiv = document.createElement('div');
+                nextStepsDiv.className = 'next-steps-container mt-2';
+                
+                const nextStepsTitle = document.createElement('div');
+                nextStepsTitle.className = 'next-steps-title';
+                nextStepsTitle.innerHTML = '<strong>Recommended Next Steps:</strong>';
+                nextStepsDiv.appendChild(nextStepsTitle);
+                
+                const nextStepsList = document.createElement('ul');
+                nextStepsList.className = 'next-steps-list';
+                
+                responseData.bot_response.next_steps.forEach(step => {
+                    const stepItem = document.createElement('li');
+                    stepItem.textContent = step;
+                    nextStepsList.appendChild(stepItem);
+                });
+                
+                nextStepsDiv.appendChild(nextStepsList);
+                messageDiv.appendChild(nextStepsDiv);
+            }
+        }
+
+        chatMessages.appendChild(messageDiv);
+
+        // Add a clearfix after each message
+        const clearfix = document.createElement('div');
+        clearfix.style.clear = 'both';
+        chatMessages.appendChild(clearfix);
+    }
+    
+    /**
+     * Format intent label for display
+     * @param {string} intent - The intent identifier
+     * @returns {string} - Formatted intent label
+     */
+    function formatIntentLabel(intent) {
+        // Convert snake_case to Title Case with spaces
+        if (!intent) return '';
+        
+        return intent
+            .split('_')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    }
+
+    /**
+     * Update UI based on detected intent
+     * @param {string} intent - The detected intent
+     */
+    function updateUIBasedOnIntent(intent) {
+        console.log('Detected intent:', intent);
+        
+        // Add a visual indicator of the current conversation topic
+        const topicIndicator = document.getElementById('topic-indicator');
+        if (topicIndicator && intent) {
+            topicIndicator.textContent = formatIntentLabel(intent);
+            topicIndicator.style.display = 'block';
+            
+            // Update color based on intent
+            const intentColors = {
+                'program_inquiry': '#e1f5fe',
+                'admission_inquiry': '#e8f5e9',
+                'fee_inquiry': '#fff8e1',
+                'deadline_inquiry': '#ffebee',
+                'contact_inquiry': '#f3e5f5',
+                'greeting': '#f5f5f5',
+                'general_inquiry': '#f5f5f5'
+            };
+            
+            topicIndicator.style.backgroundColor = intentColors[intent] || '#f5f5f5';
+        }
+    }
+    
+    /**
+     * Update suggested questions based on student profile
+     * @param {object} profile - The student profile data
+     */
+    function updateSuggestedQuestions(profile) {
+        // Only proceed if we have suggested questions container
+        const suggestedContainer = document.querySelector('.suggested-questions');
+        if (!suggestedContainer) return;
+        
+        // Get the questions container
+        const questionsContainer = document.querySelector('.suggested-questions .d-grid');
+        if (!questionsContainer) return;
+        
+        // Define question sets based on profile attributes
+        const questionSets = {
+            // Education level specific questions
+            'high_school': [
+                'What foundation programs does MSU offer?',
+                'What are the entry requirements for diploma programs?',
+                'What computing facilities does MSU provide?'
+            ],
+            'engineering': [
+                'What engineering disciplines does MSU offer?',
+                'Are there engineering internship opportunities?',
+                'What are the lab facilities for engineering students?'
+            ],
+            'healthcare': [
+                'What healthcare and medical programs does MSU offer?',
+                'Are there clinical placement opportunities?',
+                'Does MSU have partnerships with hospitals?'
+            ],
+            'arts': [
+                'What creative arts programs does MSU offer?',
+                'Are there studio facilities for arts students?',
+                'Does MSU host student exhibitions or performances?'
+            ],
+            'science': [
+                'What science programs does MSU offer?',
+                'What research facilities are available for science students?',
+                'Are there research assistant opportunities in science?'
+            ],
+            
+            // Special circumstances
+            'international': [
+                'What visa support does MSU provide for international students?',
+                'Are there accommodation options for international students?',
+                'Does MSU offer English language support programs?'
+            ],
+            'financial': [
+                'What scholarships are available at MSU?',
+                'Are there payment plans for tuition fees?',
+                'What financial aid options are available?'
+            ]
+        };
+
+        // Clear session storage
+        sessionStorage.removeItem('chatHistory');
+
+    } catch (error) {
+        console.error('Error clearing chat history:', error);
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'alert alert-danger';
+        errorDiv.textContent = translations.clear_error;
+        chatMessages.insertBefore(errorDiv, chatMessages.firstChild);
+    }
+}
+
+            console.log('Chat history cleared successfully');
+            isMessageInProgress = false;
+
+        } catch (error) {
+            console.error('Error clearing chat history:', error);
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'alert alert-danger';
+            errorDiv.textContent = translations.clear_error;
+            errorDiv.textContent = 'Failed to clear chat history. Please try again.';
+            chatMessages.insertBefore(errorDiv, chatMessages.firstChild);
+        } finally {
+            isMessageInProgress = false;
+        }
+    }
+});

@@ -1,0 +1,71 @@
+flowchart TD
+    subgraph Flask_App["Flask Application (app.py)"]
+        direction TB
+        AppFactory["create_app()"]
+        Logging["Logging (RotatingFileHandler)"]
+        Extensions["Extensions:\n- Flask-Login\n- Flask-Caching\n- SQLAlchemy"]
+    end
+
+    subgraph Blueprints["Blueprints"]
+        MainBP["main"]
+        AdminBP["admin"]
+        ApiBP["api"]
+        ChatBP["chat_controller"]
+    end
+
+    subgraph Models["Database Models (models/database.py)"]
+        User["User"]
+        Document["Document"]
+        ChatSession["ChatSession"]
+        ChatMessage["ChatMessage"]
+        QueryLog["QueryLog"]
+    end
+
+    subgraph RAG_AI["RAG/AI Layer (models/rag_utils.py)"]
+        RAGProcessor["RAGProcessor\n(LangChain, Groq, OpenAI, Gemini, FAISS)"]
+    end
+
+    subgraph Templates["Templates (Jinja2)"]
+        BaseHTML["base.html"]
+        IndexHTML["index.html"]
+        AdminTemplates["admin/*"]
+    end
+
+    subgraph Static["Static Assets"]
+        CSS["CSS"]
+        JS["JavaScript"]
+        Images["Images"]
+        PDFs["PDFs"]
+        Uploads["Uploads"]
+    end
+
+    DB[("SQLite DB\nmsu_chatbot.sqlite")]
+
+    %% Relationships
+    AppFactory --> Extensions
+    AppFactory --> Logging
+    AppFactory --> Blueprints
+    AppFactory --> DB
+    AppFactory --> Templates
+    AppFactory --> Static
+
+    Blueprints --> Models
+    Blueprints --> Templates
+    Blueprints --> RAGProcessor
+    Blueprints --> DB
+
+    RAGProcessor --> DB
+    RAGProcessor --> PDFs
+    RAGProcessor --> Models
+
+    Templates --> Static
+    AdminBP --> AdminTemplates
+    MainBP --> IndexHTML
+    Templates --> BaseHTML
+
+    Models --> DB
+    Static --> PDFs
+    Static --> Uploads
+    Static --> CSS
+    Static --> JS
+    Static --> Images

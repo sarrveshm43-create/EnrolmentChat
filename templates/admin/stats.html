@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block title %}MSU Enrollment Assistant - Statistics{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-card {
+        transition: transform 0.3s;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="border-bottom pb-2">System Statistics</h2>
+    </div>
+</div>
+
+<!-- Key Metrics -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary stats-card h-100">
+            <div class="card-body text-center">
+                <h5 class="card-title">Queries</h5>
+                <p class="display-4">{{ total_queries }}</p>
+                <p class="card-text">Total Questions</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success stats-card h-100">
+            <div class="card-body text-center">
+                <h5 class="card-title">Sessions</h5>
+                <p class="display-4">{{ total_sessions }}</p>
+                <p class="card-text">Total Sessions</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info stats-card h-100">
+            <div class="card-body text-center">
+                <h5 class="card-title">Active</h5>
+                <p class="display-4">{{ active_sessions }}</p>
+                <p class="card-text">Active Sessions</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning stats-card h-100">
+            <div class="card-body text-center">
+                <h5 class="card-title">Avg. Response</h5>
+                <p class="display-4">{{ "%.2f"|format(avg_processing_time) }}s</p>
+                <p class="card-text">Processing Time</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Queries by Day Chart -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Queries by Day</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="queriesChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Query Data Table -->
+{% if query_by_day %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Daily Query Data</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Number of Queries</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in query_by_day %}
+                            <tr>
+                                <td>{{ item.date }}</td>
+                                <td>{{ item.count }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Back to Dashboard Button -->
+<div class="row mt-4">
+    <div class="col-12">
+        <a href="{{ url_for('admin.index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Wrap query data in try-catch to handle both empty data and parsing
+        try {
+            // Prepare data for the chart
+            const queryData = JSON.parse('{{ query_by_day|tojson|safe }}');
+
+            if (queryData && queryData.length > 0) {
+                const dates = queryData.map(function (item) { return item.date; });
+                const counts = queryData.map(function (item) { return item.count; });
+
+                // Create the chart
+                const ctx = document.getElementById('queriesChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: dates,
+                        datasets: [{
+                            label: 'Number of Queries',
+                            data: counts,
+                            backgroundColor: 'rgba(13, 110, 253, 0.2)',
+                            borderColor: 'rgba(13, 110, 253, 1)',
+                            borderWidth: 2,
+                            tension: 0.1,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Query Volume Over Time'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0
+                                }
+                            }
+                        }
+                    }
+                });
+            } else {
+                console.log('No query data available');
+            }
+        } catch (e) {
+            console.error('Error initializing chart:', e);
+        }
+    });
+</script>
+{% endblock %}

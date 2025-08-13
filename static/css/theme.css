@@ -1,0 +1,274 @@
+/* MSU Enrollment Assistant Theme */
+:root {
+    --msu-red: #990000;
+    --msu-dark-red: #800000;
+    --msu-light-red: #b30000;
+    --chat-bg: #ffffff;
+    --chat-bot-bg: #f1f1f1;
+    --chat-text: #333333;
+    --border-color: #e0e0e0;
+    --header-height: 60px;
+}
+
+/* Base Theme */
+body {
+    background: #dedede;
+    color: var(--dark-text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Header */
+.navbar {
+    background-color: #89aae5 !important;
+    border-bottom: 1px solid #dedede;
+}
+
+.navbar .navbar-brand {
+    color: #fff !important;
+    font-weight: bold;
+    font-size: 1.3rem;
+}
+
+.navbar .nav-link {
+    color: #fff !important;
+    font-weight: 500;
+}
+
+.navbar .nav-link.active, .navbar .nav-link:focus, .navbar .nav-link:hover {
+    color: #333 !important;
+}
+
+.navbar-brand {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+.header-title {
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Main Container */
+.main-content {
+    display: flex;
+    padding: 20px;
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Chat Window */
+.chat-container {
+    background: var(--dark-surface-0);
+    border: 1px solid var(--dark-surface-1);
+}
+
+.chat-title, .card-header.bg-primary {
+    background: #89aae5 !important;
+    color: white !important;
+    padding: 12px 16px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: var(--chat-bg);
+    position: relative;
+    z-index: 1;
+}
+
+.message {
+    margin-bottom: 16px;
+    max-width: 80%;
+    clear: both;
+}
+
+.bot-message {
+    float: left;
+    background: var(--chat-bot-bg);
+    color: var(--chat-text);
+    padding: 12px 16px;
+    border-radius: 16px;
+    border-top-left-radius: 4px;
+}
+
+.user-message {
+    float: right;
+    background-color: #89aae5;
+    color: #000000;
+    border-radius: 1rem 0 1rem 1rem;
+    padding: 0.75rem 1rem;
+}
+
+.chat-input {
+    padding: 16px;
+    border-top: 1px solid var(--border-color);
+    background: var(--chat-bg);
+}
+
+.chat-input-box {
+    display: flex;
+    gap: 8px;
+}
+
+.chat-input input {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.send-button, .btn-primary {
+    background: #89aae5 !important;
+    color: white !important;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.send-button:hover, .btn-primary:hover {
+    background: #7089c4 !important;
+    color: white !important;
+}
+
+/* Main Container */
+.main-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+/* Suggested Questions */
+.suggested-questions {
+    background: #89aae5;
+    border: 1px solid var(--surface-2);
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm);
+    flex-shrink: 0;
+}
+
+.suggested-questions h3, 
+.suggested-questions .card-header,
+.suggested-questions h6 {
+    margin: 0 0 16px 0;
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    background-color: #89aae5;
+}
+
+/* Temporary styling to check h6 spacing */
+.suggested-questions h6 {
+    /* Default Bootstrap h6 styling */
+    padding: 0.5rem 1rem; /* Bootstrap card-header default padding */
+}
+
+.question-list {
+    display: grid;
+    gap: 8px;
+}
+
+/* Styling for suggested questions column */
+.suggested-questions .col-12,
+.suggested-questions .d-grid {
+    background-color: #f4f5f6;
+    border-radius: 6px;
+    padding: 10px;
+}
+
+/* Specific styling for the card header with h6 */
+.suggested-questions .card-header.bg-light {
+    background-color: #89aae5 !important;
+    color: white;
+    margin-bottom: 0;
+}
+
+
+
+.language-btn {
+    background: var(--dark-surface-0);
+    color: var(--dark-text);
+    border: 1px solid var(--dark-surface-2);
+}
+
+.language-btn.active {
+    background: var(--primary);
+    border-color: var(--primary-dark);
+}
+
+.question-button {
+    background: var(--surface-0);
+    border: 1px solid var(--surface-2);
+    padding: 0.75rem;
+    border-radius: 6px;
+    text-align: left;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+    margin-bottom: 0.5rem;
+}
+
+.question-button:hover {
+    background: var(--surface-1);
+    border-color: var(--primary-light);
+}
+
+/* Language Selector */
+.language-selector {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 4px;
+}
+
+.language-selector select {
+    border: none;
+    background: none;
+    color: var(--chat-text);
+    font-size: 14px;
+    padding: 4px 8px;
+}
+
+/* Utility Classes */
+.clear-chat {
+    color: #666;
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.clear-chat:hover {
+    text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main-content {
+        flex-direction: column;
+    }
+
+    .suggested-questions {
+        width: 100%;
+        order: -1;
+    }
+
+    .message {
+        max-width: 90%;
+    }
+}
+

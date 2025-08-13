@@ -1,0 +1,61 @@
+%% MSU AI Chatbot System Architecture (Professional, Layered)
+%% Suitable for research paper inclusion
+
+flowchart TD
+    %% External Actors
+    User(["User (Student/Visitor)"])
+    Admin(["Admin Staff"])
+
+    %% Presentation Layer
+    subgraph Presentation_Layer["Presentation Layer"]
+        WebUI["Web UI (HTML, CSS, JS, Bootstrap, Jinja2 Templates)"]
+    end
+
+    %% Application Layer
+    subgraph Application_Layer["Application Layer"]
+        FlaskApp["Flask App Factory (app.py)"]
+        Blueprints["Blueprints\n(main, admin, api, chat_controller)"]
+        Auth["Authentication & Session Mgmt\n(Flask-Login)"]
+        Caching["Caching (Flask-Caching)"]
+        Logging["Logging"]
+    end
+
+    %% Domain/AI Layer
+    subgraph Domain_Layer["Domain & AI Layer"]
+        RAG["RAGProcessor\n(LangChain, Groq, OpenAI, Gemini)"]
+        NLP["NLP & Multilingual Support"]
+        Analytics["Query Analytics"]
+    end
+
+    %% Data Layer
+    subgraph Data_Layer["Data Layer"]
+        DB[("SQLite Database\n(Users, Documents, Sessions, Messages, Logs)")]
+        VectorStore[("FAISS Vector Store\n(Document Embeddings)")]
+        PDFs[("PDF Documents\n(Official MSU Docs)")]
+        StaticFiles[("Static Files\n(CSS, JS, Images, Uploads)")]
+    end
+
+    %% Data Flow & Interactions
+    User -- "HTTP(S) Requests" --> WebUI
+    Admin -- "Admin Interface" --> WebUI
+    WebUI -- "Routes/Forms/API" --> FlaskApp
+    FlaskApp -- "Route Handling" --> Blueprints
+    Blueprints -- "Render" --> WebUI
+    Blueprints -- "Auth, Session" --> Auth
+    Blueprints -- "Cache" --> Caching
+    Blueprints -- "Log Events" --> Logging
+    Blueprints -- "Business Logic" --> RAG
+    Blueprints -- "CRUD" --> DB
+    Blueprints -- "Analytics" --> Analytics
+    Blueprints -- "Serve" --> StaticFiles
+    RAG -- "Retrieve/Embed" --> VectorStore
+    RAG -- "Ingest" --> PDFs
+    RAG -- "Store/Fetch" --> DB
+    Analytics -- "Log/Analyze" --> DB
+    VectorStore -- "Indexes" --> PDFs
+    DB -- "Stores" --> PDFs
+    StaticFiles -- "Served to" --> WebUI
+
+    %% Notes
+    classDef layer fill:#f9f,stroke:#333,stroke-width:1px;
+    class Presentation_Layer,Application_Layer,Domain_Layer,Data_Layer layer;
